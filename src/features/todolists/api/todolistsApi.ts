@@ -10,6 +10,7 @@ import { BaseResponse } from "@/common/types"
 export const todolistsApi = createApi({
   // `reducerPath` - имя `slice`, куда будут сохранены состояние и экшены для этого `API`
   reducerPath: "todolistsApi",
+  tagTypes: ["Todolist"],
   // `baseQuery` - конфигурация для `HTTP-клиента`, который будет использоваться для отправки запросов
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_BASE_URL,
@@ -28,6 +29,7 @@ export const todolistsApi = createApi({
       query: () => "todo-lists",
       transformResponse: (todolists: Todolist[]): DomainTodolist[] =>
         todolists.map((todolist) => ({ ...todolist, filter: "all", entityStatus: "idle" })),
+      providesTags: ["Todolist"],
     }),
     addTodolist: build.mutation<BaseResponse<{ item: Todolist }>, string>({
       query: (title) => ({
@@ -35,12 +37,14 @@ export const todolistsApi = createApi({
         method: "POST",
         body: { title },
       }),
+      invalidatesTags: ["Todolist"],
     }),
     removeTodolist: build.mutation<BaseResponse, string>({
       query: (id) => ({
         url: `todo-lists/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["Todolist"],
     }),
     updateTodolistTitle: build.mutation<BaseResponse, { id: string; title: string }>({
       query: ({ id, title }) => ({
@@ -48,6 +52,7 @@ export const todolistsApi = createApi({
         method: "PUT",
         body: { title },
       }),
+      invalidatesTags: ["Todolist"],
     }),
   }),
 })
