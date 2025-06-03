@@ -3,6 +3,7 @@ import { AUTH_TOKEN } from "@/common/constants"
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import { DomainTodolist } from "../model/todolists-slice"
 import { Todolist } from "./todolistsApi.types"
+import { BaseResponse } from "@/common/types"
 
 // `createApi` - функция из `RTK Query`, позволяющая создать объект `API`
 // для взаимодействия с внешними `API` и управления состоянием приложения
@@ -28,9 +29,34 @@ export const todolistsApi = createApi({
       transformResponse: (todolists: Todolist[]): DomainTodolist[] =>
         todolists.map((todolist) => ({ ...todolist, filter: "all", entityStatus: "idle" })),
     }),
+    addTodolist: build.mutation<BaseResponse<{ item: Todolist }>, string>({
+      query: (title) => ({
+        url: "todo-lists",
+        method: "POST",
+        body: { title },
+      }),
+    }),
+    removeTodolist: build.mutation<BaseResponse, string>({
+      query: (id) => ({
+        url: `todo-lists/${id}`,
+        method: "DELETE",
+      }),
+    }),
+    updateTodolistTitle: build.mutation<BaseResponse, { id: string; title: string }>({
+      query: ({ id, title }) => ({
+        url: `todo-lists/${id}`,
+        method: "PUT",
+        body: { title },
+      }),
+    }),
   }),
 })
 
 // `createApi` создает объект `API`, который содержит все эндпоинты в виде хуков,
 // определенные в свойстве `endpoints`
-export const { useGetTodolistsQuery } = todolistsApi
+export const {
+  useGetTodolistsQuery,
+  useAddTodolistMutation,
+  useRemoveTodolistMutation,
+  useUpdateTodolistTitleMutation,
+} = todolistsApi
