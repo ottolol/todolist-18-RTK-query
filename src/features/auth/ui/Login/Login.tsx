@@ -1,4 +1,4 @@
-import { selectThemeMode } from "@/app/app-slice"
+import { selectThemeMode, setIsLoggedInAC } from "@/app/app-slice"
 import { useAppDispatch, useAppSelector } from "@/common/hooks"
 import { getTheme } from "@/common/theme"
 import { type Inputs, loginSchema } from "@/features/auth/lib/schemas"
@@ -14,6 +14,9 @@ import Grid from "@mui/material/Grid2"
 import TextField from "@mui/material/TextField"
 import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import styles from "./Login.module.css"
+import { useLoginMutation } from "../../api/authApi"
+import { ResultCode } from "@/common/enums"
+import { AUTH_TOKEN } from "@/common/constants"
 
 export const Login = () => {
   const themeMode = useAppSelector(selectThemeMode)
@@ -21,6 +24,8 @@ export const Login = () => {
   const dispatch = useAppDispatch()
 
   const theme = getTheme(themeMode)
+
+  const [login] = useLoginMutation()
 
   const {
     register,
@@ -34,8 +39,13 @@ export const Login = () => {
   })
 
   const onSubmit: SubmitHandler<Inputs> = (data) => {
-    dispatch(loginTC(data))
-    reset()
+    login(data).then((res) => {
+      if (res.data?.resultCode === ResultCode.Success) {
+        dispatch(setIsLoggedInAC({ isLoggedIn: true }))
+        localStorage.setItem(AUTH_TOKEN, res.data.data.token)
+        reset()
+      }
+    })
   }
 
   return (
